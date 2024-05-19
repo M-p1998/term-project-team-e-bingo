@@ -433,28 +433,27 @@ async function getGameInfo(room_id: Number) {
 	try {
 		const gameInfo = await query(
 			`
-    SELECT 
-    r.room_id, 
-    p.user_id, 
-    host.user_id as host_id,
-  u.username,
-  pc.card_id as card_id,
-  cid.card_data as card_data
-  
-    FROM 
-      bingo_schema."Rooms" AS r
-    JOIN 
-      bingo_schema.room_player_table AS p ON r.room_id = p.room_id
-    JOIN 
-      bingo_schema."Users" AS host ON r.host = host.username
-    JOIN 
-      bingo_schema."Users" AS u ON p.user_id = u.user_id
-  JOIN 
-      bingo_schema.player_card AS pc ON p.user_id = pc.player_id
-  JOIN 
-      bingo_schema.cards_table AS cid ON pc.card_id = cid.card_id
-  WHERE
-      r.room_id = $1;
+			SELECT 
+			r.room_id, 
+			p.user_id, 
+			host.user_id as host_id,
+			  u.username,
+			  pc.card_id as card_id,
+			cid.card_data as card_data
+			FROM 
+			  bingo_schema."Rooms" AS r
+			JOIN 
+			  bingo_schema.room_player_table AS p ON r.room_id = p.room_id
+			JOIN 
+			  bingo_schema."Users" AS host ON r.host = host.username
+			JOIN 
+			  bingo_schema."Users" AS u ON p.user_id = u.user_id
+			JOIN 
+			  bingo_schema.player_card AS pc ON p.user_id = pc.player_id and r.room_id = pc.room_id
+			join
+			  bingo_schema.cards_table AS cid ON pc.card_id = cid.card_id
+		  WHERE
+			  r.room_id = $1;
     `,
 			[room_id]
 		)
