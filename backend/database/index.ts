@@ -96,8 +96,8 @@ async function getUserIdByUsername(username: string) {
 
 async function RoomNameOrHostExist(roomName: string, host: string) {
 	try {
-		const queryText = 'SELECT * FROM bingo_schema."Rooms" WHERE room_name = $1 or host = $2'
-		const queryParams = [roomName, host]
+		const queryText = 'SELECT * FROM bingo_schema."Rooms" WHERE room_name = $1'
+		const queryParams = [roomName]
 		return (await query(queryText, queryParams)).rows
 	} catch (error) {
 		console.error('Error inserting room:', error)
