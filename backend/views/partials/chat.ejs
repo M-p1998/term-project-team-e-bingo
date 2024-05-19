@@ -14,6 +14,9 @@
 	const form = document.getElementById('chatForm')
 	const input = document.getElementById('input')
 	const messages = document.getElementById('messages')
+	const chatButton = document.getElementById('chatButton');
+	const chatArea = document.getElementById('chat-container');
+	
 	const user = "<%= session.user ? session.user['username'] : 'Guest' %>"
 	const roomId = '<%= locals.roomId %>' // This assumes you pass `roomId` when rendering the EJS
 
@@ -33,13 +36,13 @@
 			const item = document.createElement('p')
 			item.textContent = msg.user + ': ' + msg.message
 			messages.appendChild(item)
+			chatArea.classList.add('show')
 		}
 	})
 
-	const chatButton = document.getElementById('chatButton');
-	const chatArea = document.getElementById('chat-container');
 	chatButton.onclick = _ => {
 		chatArea.classList.toggle('show')
+		input.focus()
 	}
 	
 	
