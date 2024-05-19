@@ -20,6 +20,11 @@ h1, p {
     flex-direction: column;
 }
 
+.error-message > p {
+    font-size: 15px;
+    color: red;
+}
+
 .room-list > a {
     background-color: #313131;
     list-style-type:none;
@@ -64,6 +69,7 @@ h1, p {
 }
 .logo{
     /* margin: 0; */
+    
     color:rgb(223, 161, 29);
     padding: 20px;
     /* justify-content:right; */

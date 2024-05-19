@@ -1,7 +1,7 @@
 
 <section class="menu-cubes">
     <div class="logo">
-        <h2> BINGO </h2>
+        <h2> BINGO </h2> <% if (locals.session.user) { %><span><%= locals.session.user.username %></span><% } %>
     </div>
 <div class="container">
     

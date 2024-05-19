@@ -3,17 +3,24 @@ body {
 	margin: 0;
 }
 
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
 .hero-section {
-	background-image: url('/assets/images/welcome.webp');
-	/* color: white;
-	background-size: cover;
-	background-repeat: no-repeat;
-	padding: 100px 20px;
-	text-align: center; */
-	color: aliceblue;
-	background-size: cover;
-	background-repeat:no-repeat;
-	background-position: center;
+	background: linear-gradient(-90deg, #e03f0e, #af2a5d, #13627f, #178e72, #e03f0e);
+	background-size: 1000% 1000%;
+	animation: gradient 20s ease-in-out infinite;
+
 	padding: 100px 20px;
 	text-align: center;
 	font-size: 30px;
@@ -24,10 +31,6 @@ body {
 	color: aliceblue;
 	
 }
-/* .hero-section p {
-	color: rgb(189, 211, 231);
-	
-} */
 
 .cta-button-rg {
 	background: linear-gradient(to top, rgba(255, 187, 0,0.5), rgba(255, 119, 0,0.7));
@@ -36,7 +39,7 @@ body {
 	padding: 12px 24px;
 	border-radius: 5px;
 	text-decoration: none;
-	font-weight: large;
+	/* font-weight: large; */
 }
 
 .cta-button-rg:hover {
@@ -89,3 +92,4 @@ body {
 	padding: 50px 20px;
 	height: auto;
 }
+
