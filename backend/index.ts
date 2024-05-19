@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
 	socket.on('create room', async (data) => {
 		const isRoomOrHost = await db.RoomNameOrHostExist(data.roomName, data.user)
 		if (isRoomOrHost.length > 0){
-			return io.to('lobby').emit('failed create room', {error: 'You have already created a room or room exist!', user: data.user})
+			return io.to('lobby').emit('failed create room', {error: 'This room name exist! Please use other room name', user: data.user})
 		}
 		// ===================================================>>>>>
 		await db.createRoom(data.roomName, data.user, false)
