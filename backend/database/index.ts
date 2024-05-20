@@ -70,7 +70,7 @@ async function createTable(): Promise<void> {
 async function getUsers() {
 	try {
 		const result = await query('SELECT * FROM bingo_schema."Users"', [])
-		console.log(result.rows)
+		return result.rows
 	} catch (error) {
 		console.error('Error executing query', error)
 	}
