@@ -23,43 +23,59 @@ router.get('/register', (req: Request, res: Response) => {
 })
 
 router.post('/register', async (req, res) => {
-	const { username, email, password } = req.body
-	const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-	const validEmail = pattern.test(email);
-	if (!validEmail) {
-		return res.render('register', { session: req.session, errorMessage: 'Invalid email format!' })
+	try{
+		const { username, email, password } = req.body
+		const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+		const validEmail = pattern.test(email);
+		if (!validEmail) {
+			return res.render('register', { session: req.session, errorMessage: 'Invalid email format!' })
+		}
+	
+		const allUser = await db.getUsers() // Await the getUsers() function call
+		const userExist = allUser?.find((user) => user.username === username)
+		if (userExist) {
+			return res.render('register', { session: req.session, errorMessage: 'Username already exist!' })
+		}
+	
+		const emailExist = allUser?.find((user) => user.email === email)
+		if (emailExist) {
+			return res.render('register', { session: req.session, errorMessage: 'Email already exist!' })
+		}
+	
+		const salt = await bcrypt.genSalt()
+		const hash = await bcrypt.hash(password, salt)
+	
+		await insertUser(username, hash, email)
+		res.render('login', { session: req.session, errorMessage: '' })
+	}catch(error){
+		console.error('Failed to register:', error)
+		res.status(500).send('Internal Server Error')
 	}
-
-	const allUser = await db.getUsers() // Await the getUsers() function call
-	const userExist = allUser?.find((user) => user.username === username)
-	if (userExist) {
-		return res.render('register', { session: req.session, errorMessage: 'Username already exist!' })
-	}
-
-	const emailExist = allUser?.find((user) => user.email === email)
-	if (emailExist) {
-		return res.render('register', { session: req.session, errorMessage: 'Email already exist!' })
-	}
-
-	const salt = await bcrypt.genSalt()
-	const hash = await bcrypt.hash(password, salt)
-
-	await insertUser(username, hash, email)
-	res.render('login', { session: req.session, errorMessage: '' })
 })
 
 router.post('/login', (req: Request, res: Response) => {
-	loginRequest(req, res)
+	try{
+		loginRequest(req, res)
+	}catch(error){
+		console.error('Failed to login:', error)
+		res.status(500).send('Internal Server Error')
+	}
 })
 
 router.post('/logout', (req: Request, res: Response) => {
-	req.session.destroy((err) => {
-		if (err) {
-			return res.redirect('/')
-		}
-		res.clearCookie('connect.sid')
-		res.redirect('/login')
-	})
+	try{
+		req.session.destroy((err) => {
+			if (err) {
+				return res.redirect('/')
+			}
+			res.clearCookie('connect.sid')
+			res.redirect('/login')
+		})
+	}catch(error){
+		console.error('Failed to logout:', error)
+		res.status(500).send('Internal Server Error')
+	}
+	
 })
 
 router.get('/available_rooms', async (req: Request, res: Response) => {
