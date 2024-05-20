@@ -1,7 +1,7 @@
 const roomNameInput = document.getElementById('roomNameInput');
 const createRoomBtn = document.getElementById('createRoomBtn');
 
-document.getElementById('createRoomBtn').onclick = () => {
+createRoomBtn.onclick = () => {
     const roomName = roomNameInput.value;
     if (roomName) {
         socket.emit('create room', { roomName: roomName, user: user });
