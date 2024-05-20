@@ -47,6 +47,7 @@ function addEntry(host, roomName, roomId, roomStatus, roomsList, isRejoin) {
         joinButton.onclick = () => joinRoom(roomId);
     } else {
         joinButton.textContent = "Playing";
+        joinButton.classList.add('playing')
     }
 
     actionCell.appendChild(joinButton);
@@ -66,9 +67,11 @@ socket.on('update status game', (data) => {
     if (data.status) {
         joinButton.innerText = "Playing";
         joinButton.onclick = null;
+        joinButton.classList.add('playing')
     } else {
         joinButton.innerText = "Join"
         joinButton.onclick = () => joinRoom(data.roomId);
+        joinButton.classList.remove('playing')
     }
 });
 
