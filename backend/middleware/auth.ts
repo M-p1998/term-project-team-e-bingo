@@ -67,14 +67,33 @@ const loginRequest = async (req: Request, res: Response) => {
 
 
 const isUserExist = async (req: Request, res: Response, next: NextFunction) => {
-	const roomId = req.params.roomId
-	const player = await getPlayerInRoom(parseInt(roomId))
-	const found = player.find((player) => player.user_id == req.session.user?.userId)
-	if(!found) {
-		res.status(403).render('status403')
-		return
-	}
-	next();
+
+    try{
+        const roomId = parseInt(req.params.roomId);
+        const userId = req.session.user?.userId;
+
+        if (!userId) {
+            return res.status(403).render('status403');
+        }
+
+        const [players, roomDetail] = await Promise.all([
+            getPlayerInRoom(roomId),
+            getRoomDetail(roomId),
+        ]);
+
+        const found = players.find((player) => player.user_id == req.session.user?.userId)
+        const gameStarted = roomDetail?.status;
+        if(!found || gameStarted) {
+            res.status(403).render('status403')
+            return
+        }
+        next();
+    }catch(error){
+        console.error('Error in isUserExist middleware:', error);
+        res.status(500).send('Internal Server Error');
+
+    }
+	
 }
 
 const isUserExistAndGameStarted = async (req: Request, res: Response, next: NextFunction) => {
