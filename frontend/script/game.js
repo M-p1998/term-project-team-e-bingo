@@ -129,10 +129,8 @@ function checkWon(user_id, room_id) {
 }
 
 socket.on('player won', function (data) {
-	if (userId == hostId) {
-		socket.emit('game ended', {roomId: roomId})
-	}
 	if (userId == data.playerId) {
+		socket.emit('game ended', {roomId: roomId})
 		alert('You won the game!')
 	} else {
 		alert(data.playerUsername + ' won the game!')
