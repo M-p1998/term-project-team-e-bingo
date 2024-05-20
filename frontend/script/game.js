@@ -129,19 +129,21 @@ function checkWon(user_id, room_id) {
 }
 
 socket.on('player won', function (data) {
+	if (userId == hostId) {
+		socket.emit('game ended', {roomId: roomId})
+	}
 	if (userId == data.playerId) {
 		alert('You won the game!')
 	} else {
 		alert(data.playerUsername + ' won the game!')
 	}
-	if (userId == hostId) {
-		socket.emit('game ended', {roomId: roomId})
-	} else {
-		alert('Please wait for the host to end the game!')
-	}
 })
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-socket.on('finished cleanup', function (data) {
+socket.on('finished cleanup', async function (data) {
+	await sleep(1000)
 	window.location.href = `/waiting/${data.roomId}`
 })
 socket.on('player not won', function (data) {
