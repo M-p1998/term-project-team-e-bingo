@@ -1,38 +1,51 @@
-import express, {Request, Response, NextFunction} from 'express'
-import {loginRequest,isUserExist,isUserExistAndGameStarted} from '../middleware/auth'
-import {createTable, insertUser, getUsers, getRooms} from '../database/index'
+import express, { Request, Response, NextFunction } from 'express'
+import { loginRequest, isUserExist, isUserExistAndGameStarted } from '../middleware/auth'
+import { createTable, insertUser, getUsers, getRooms } from '../database/index'
 import * as db from '../database/index'
 import bcrypt from 'bcrypt'
 
 const router = express.Router()
 
 router.get('/', async (req, res) => {
-	res.render('index', {session: req.session})
+	res.render('index', { session: req.session })
 })
 
 router.get('/lobby', (req, res) => {
-	res.render('lobby', {session: req.session})
+	res.render('lobby', { session: req.session })
 })
 
 router.get('/login', (req: Request, res: Response) => {
-	res.render('login', {session: req.session,errorMessage: ''})
+	res.render('login', { session: req.session, errorMessage: '' })
 })
 
 router.get('/register', (req: Request, res: Response) => {
-	res.render('register', {session: req.session,errorMessage: ''})
+	res.render('register', { session: req.session, errorMessage: '' })
 })
 
 router.post('/register', async (req, res) => {
-	const {username, email, password} = req.body
-	//Add a check function to check if username or email has
-	//already been used.
-	//PROCESS DATA:
+	const { username, email, password } = req.body
+	const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+	const validEmail = pattern.test(email);
+	if (!validEmail) {
+		return res.render('register', { session: req.session, errorMessage: 'Invalid email format!' })
+	}
+
+	const allUser = await db.getUsers() // Await the getUsers() function call
+	const userExist = allUser?.find((user) => user.username === username)
+	if (userExist) {
+		return res.render('register', { session: req.session, errorMessage: 'Username already exist!' })
+	}
+
+	const emailExist = allUser?.find((user) => user.email === email)
+	if (emailExist) {
+		return res.render('register', { session: req.session, errorMessage: 'Email already exist!' })
+	}
+
 	const salt = await bcrypt.genSalt()
 	const hash = await bcrypt.hash(password, salt)
 
-	// - Store all of them to DB
 	await insertUser(username, hash, email)
-	res.render('login', {session: req.session,errorMessage: ''})
+	res.render('login', { session: req.session, errorMessage: '' })
 })
 
 router.post('/login', (req: Request, res: Response) => {
@@ -63,7 +76,7 @@ router.get('/available_rooms', async (req: Request, res: Response) => {
 	}
 })
 
-router.get('/waiting/:roomId',isUserExist, async (req, res) => {
+router.get('/waiting/:roomId', isUserExist, async (req, res) => {
 	const roomId = req.params.roomId
 
 	try {
@@ -98,13 +111,13 @@ router.get('/waiting/:roomId',isUserExist, async (req, res) => {
 
 router.post('/add_user_status', async (req: Request, res: Response) => {
 	try {
-		const {username, room_id} = req.body
+		const { username, room_id } = req.body
 		const user_id = await db.getUserIdByUsername(username)
 		const statusExist = await db.getPlayerStatus(user_id, room_id)
 		if (statusExist === undefined) {
 			await db.insertPlayerStatus(user_id, room_id)
 		}
-		res.status(201).json({message: 'Player status added'})
+		res.status(201).json({ message: 'Player status added' })
 	} catch (error) {
 		console.error('Failed to join room:', error)
 		res.status(500).send('Internal Server Error')
@@ -112,31 +125,34 @@ router.post('/add_user_status', async (req: Request, res: Response) => {
 })
 
 router.post('/join_room/:roomId', async (req: Request, res: Response) => {
-	
-	
 	if (req.session.user) {
-		const player_id = await db.getUserIdByUsername(req.session.user.username)
-		const room_id = parseInt(req.params.roomId)
+		try {
+			const player_id = await db.getUserIdByUsername(req.session.user.username)
+			const room_id = parseInt(req.params.roomId)
 
-		// It's better to check if player_id or room_id are valid before proceeding
-		if (!player_id || isNaN(room_id)) {
-			return res.status(400).json({message: 'Invalid user or room ID'})
-		}
-
-		const playerExistInRoom = await db.ifPlayerInRoom(player_id, room_id)
-		const allPlayers = await db.getPlayerInRoom(room_id)
-		if (allPlayers.length >= 4 && !playerExistInRoom) {
-			res.status(403).json({message: 'Room is full'})
-		} else {
-			if (playerExistInRoom) {
-				res.status(200).json({message: 'Player added to room, joining'})
-			} else {
-				await db.addPlayerToRoom(player_id, room_id)
-				res.status(201).json({message: 'Player added to room'})
+			// It's better to check if player_id or room_id are valid before proceeding
+			if (!player_id || isNaN(room_id)) {
+				return res.status(400).json({ message: 'Invalid user or room ID' })
 			}
+
+			const playerExistInRoom = await db.ifPlayerInRoom(player_id, room_id)
+			const allPlayers = await db.getPlayerInRoom(room_id)
+			if (allPlayers.length >= 4 && !playerExistInRoom) {
+				res.status(403).json({ message: 'Room is full' })
+			} else {
+				if (playerExistInRoom) {
+					res.status(200).json({ message: 'Player added to room, joining' })
+				} else {
+					await db.addPlayerToRoom(player_id, room_id)
+					res.status(201).json({ message: 'Player added to room' })
+				}
+			}
+		} catch (error) {
+			console.error('Failed to join room:', error)
+			res.status(500).send('Internal Server Error')
 		}
 	} else {
-		res.status(401).json({message: 'User not logged in'}) // 401 for unauthorized access
+		res.status(401).json({ message: 'User not logged in' }) // 401 for unauthorized access
 	}
 })
 
@@ -144,9 +160,9 @@ router.get('/game', async (req, res) => {
 	res.render('game')
 })
 
-router.get('/game/:roomId',isUserExistAndGameStarted, async (req, res) => {
-	const roomId = req.params.roomId
+router.get('/game/:roomId', isUserExistAndGameStarted, async (req, res) => {
 	try {
+		const roomId = req.params.roomId
 		const startTime = await db.getStartTime(parseInt(roomId))
 		const rawData = await db.getGameInfo(parseInt(roomId))
 		const drawnNumber = await db.getDrawnNumber(parseInt(roomId))
@@ -160,8 +176,8 @@ router.get('/game/:roomId',isUserExistAndGameStarted, async (req, res) => {
 				user_id: player.user_id,
 				username: player.username,
 				card_id: player.card_id,
-				card_data: player.user_id==req.session.user?.userId?player.card_data:player.card_data.map(()=>[0,0,0,0,0])
-	
+				card_data: player.user_id == req.session.user?.userId ? player.card_data : player.card_data.map(() => [0, 0, 0, 0, 0])
+
 			})),
 			start_time: startTime,
 			drawn_number: drawnNumber
@@ -186,103 +202,88 @@ router.get('/game/:roomId',isUserExistAndGameStarted, async (req, res) => {
 })
 
 router.post('/starting_game/:roomId', async (req: Request, res: Response) => {
-	const {host_id, players, room_id} = req.body
-	await db.deleteOldCards(room_id)
-	await db.deleteStartTime(room_id)
-	await db.deleteDrawnNumber(room_id)
-	await db.insertDrawnNumber(room_id, 0)
-	await db.updateRoomStatus(room_id,true)
-
-	// ONLY INSERT CARDS BASE ON NUMBER OF USERs
-	const cardCollection = await db.insertNumCard(room_id)
-
-	if (Array.isArray(cardCollection) && cardCollection.length >= players.length) {
-		for (let i = 0; i < players.length; i++) {
-			await db.assignCardToPlayer(players[i], cardCollection[i].card_id, room_id)
+	try{
+		const { host_id, players, room_id } = req.body
+		await db.deleteOldCards(room_id)
+		await db.deleteStartTime(room_id)
+		await db.deleteDrawnNumber(room_id)
+		await db.insertDrawnNumber(room_id, 0)
+		await db.updateRoomStatus(room_id, true)
+	
+		// ONLY INSERT CARDS BASE ON NUMBER OF USERs
+		const cardCollection = await db.insertNumCard(room_id)
+	
+		if (Array.isArray(cardCollection) && cardCollection.length >= players.length) {
+			for (let i = 0; i < players.length; i++) {
+				await db.assignCardToPlayer(players[i], cardCollection[i].card_id, room_id)
+			}
+			await db.insertStartTime(room_id)
+			res.status(200).json({ message: 'Game started' })
+		} else {
+			res.status(400).json({ message: 'Invalid players or card collection' })
 		}
-		await db.insertStartTime(room_id)
-		res.status(200).json({message: 'Game started'})
-	} else {
-		res.status(400).json({message: 'Invalid players or card collection'})
+	}catch(error){
+		console.error('Failed to start game:', error)
+		res.status(500).send('Internal Server Error')
 	}
-
-	/*
-  if (req.session.user) {
-    const player_id = await db.getUserIdByUsername(req.session.user.username);
-    const room_id = parseInt(req.params.roomId);
-
-    // It's better to check if player_id or room_id are valid before proceeding
-    if (!player_id || isNaN(room_id)) {
-      return res.status(400).json({ message: 'Invalid user or room ID' });
-    }
-
-    const playerExistInRoom = await db.ifPlayerInRoom(player_id, room_id);
-    const allPlayers = await db.getPlayerInRoom(room_id);
-    if (allPlayers.length >= 4 && !playerExistInRoom) {
-      res.status(403).json({ message: 'Room is full' });
-    } else {
-      if (playerExistInRoom) {
-        res.status(200).json({ message: 'Player added to room, joining' });
-      } else {
-        await db.addPlayerToRoom(player_id, room_id);
-        res.status(201).json({ message: 'Player added to room' });
-      }
-    }
-  } else {
-    res.status(401).json({ message: 'User not logged in' }); // 401 for unauthorized access
-  }*/
 })
 
 router.post('/host_exit/:roomId', async (req: Request, res: Response) => {
-	const {userId, roomId} = req.body
-	if (userId && roomId) {
-		await db.removePlayerFromRoom(userId, roomId)
-		await db.deletePlayerStatus(userId, roomId)
-		await db.deleteRoom(roomId)
-		res.status(200).json({message: 'Room Deleted'})
-	} else {
-		res.status(400).json({message: 'Invalid user or room ID'})
+	const { userId, roomId } = req.body
+	try{
+		if (userId && roomId) {
+			await db.removePlayerFromRoom(userId, roomId)
+			await db.deletePlayerStatus(userId, roomId)
+			await db.deleteRoom(roomId)
+			res.status(200).json({ message: 'Room Deleted' })
+		} else {
+			res.status(400).json({ message: 'Invalid user or room ID' })
+		}
+	}catch(error){
+		console.error('Failed to delete room:', error)
+		res.status(500).send('Internal Server Error')
 	}
 })
 router.post('/api/draw_number/:roomId', async (req: Request, res: Response) => {
-	const {roomId} = req.body
-	if (roomId) {
-        const drawnNumbers = await db.getDrawnNumber(parseInt(roomId));
-		const draw_number_without_zero = drawnNumbers.filter((result) => result.drawn_number !== 0)
-		if (draw_number_without_zero.length<=0){
-			return res.status(400).json({message: 'No number drawn yet'})
-		}else{
-			return res.status(200).json({message: 'Number started drawing'})
+	try{
+		const { roomId } = req.body
+		if (roomId) {
+			const drawnNumbers = await db.getDrawnNumber(parseInt(roomId));
+			const draw_number_without_zero = drawnNumbers.filter((result) => result.drawn_number !== 0)
+			if (draw_number_without_zero.length <= 0) {
+				return res.status(400).json({ message: 'No number drawn yet' })
+			} else {
+				return res.status(200).json({ message: 'Number started drawing' })
+			}
 		}
+	}catch(error){
+		console.error('Failed to draw number:', error)
+		res.status(500).send('Internal Server Error')
 	}
 });
 
 router.get('/check_user_and_game/:roomId', async (req, res) => {
-    try {
-        const roomId = parseInt(req.params.roomId);
-        const userId = req.session.user?.userId;
+	try {
+		const roomId = parseInt(req.params.roomId);
+		const userId = req.session.user?.userId;
 
-        if (!userId) {
-            return res.status(200).json({ isUserInRoom: false, isGameStarted: false });
-        }
+		if (!userId) {
+			return res.status(200).json({ isUserInRoom: false, isGameStarted: false });
+		}
 
-        const [players, roomDetail] = await Promise.all([
-            db.getPlayerInRoom(roomId),
-            db.getRoomDetail(roomId),
-        ]);
+		const [players, roomDetail] = await Promise.all([
+			db.getPlayerInRoom(roomId),
+			db.getRoomDetail(roomId),
+		]);
 
-        const isUserInRoom = players.some((player) => player.user_id === userId);
-        const isGameStarted = roomDetail?.status;
+		const isUserInRoom = players.some((player) => player.user_id === userId);
+		const isGameStarted = roomDetail?.status;
 
-        res.status(200).json({ isUserInRoom, isGameStarted });
-    } catch (error) {
-        console.error('Error in checkUserInRoomAndGameStarted:', error);
-        res.status(500).send('Internal Server Error');
-    }
+		res.status(200).json({ isUserInRoom, isGameStarted });
+	} catch (error) {
+		console.error('Error in checkUserInRoomAndGameStarted:', error);
+		res.status(500).send('Internal Server Error');
+	}
 });
 export default router
-/**
- * if (allPlayers.length >= 4) {
-        res.status(403).json({ message: 'Room is full' });
-    } else 
- */
+
