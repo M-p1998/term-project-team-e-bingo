@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express'
 import { loginRequest, isUserExist, isUserExistAndGameStarted } from '../middleware/auth'
-import { createTable, insertUser, getUsers, getRooms } from '../database/index'
 import * as db from '../database/index'
 import bcrypt from 'bcrypt'
 
@@ -45,7 +44,7 @@ router.post('/register', async (req, res) => {
 		const salt = await bcrypt.genSalt()
 		const hash = await bcrypt.hash(password, salt)
 	
-		await insertUser(username, hash, email)
+		await db.insertUser(username, hash, email)
 		res.render('login', { session: req.session, errorMessage: '' })
 	}catch(error){
 		console.error('Failed to register:', error)
@@ -80,7 +79,7 @@ router.post('/logout', (req: Request, res: Response) => {
 
 router.get('/available_rooms', async (req: Request, res: Response) => {
 	try {
-		const result = await getRooms() // Await the getRooms() function call
+		const result = await db.getRooms() // Await the getRooms() function call
 		if (result) {
 			res.json(result) // Send the result directly
 		} else {
@@ -257,7 +256,7 @@ router.post('/host_exit/:roomId', async (req: Request, res: Response) => {
 		}
 	}catch(error){
 		console.error('Failed to delete room:', error)
-		res.status(500).send('Internal Server Error')
+		res.status(500).json({ message: 'Internal Server Error' })
 	}
 })
 router.post('/api/draw_number/:roomId', async (req: Request, res: Response) => {
@@ -267,9 +266,9 @@ router.post('/api/draw_number/:roomId', async (req: Request, res: Response) => {
 			const drawnNumbers = await db.getDrawnNumber(parseInt(roomId));
 			const draw_number_without_zero = drawnNumbers.filter((result) => result.drawn_number !== 0)
 			if (draw_number_without_zero.length <= 0) {
-				return res.status(400).json({ message: 'No number drawn yet' })
+				return res.status(200).json({ message: 'No number drawn yet' })
 			} else {
-				return res.status(200).json({ message: 'Number started drawing' })
+				return res.status(400).json({ message: 'Number started drawing' })
 			}
 		}
 	}catch(error){
