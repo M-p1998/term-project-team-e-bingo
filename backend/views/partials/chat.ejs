@@ -17,13 +17,14 @@
     const chatButton = document.getElementById('chatButton');
     const chatArea = document.getElementById('chat-container');
     
-    const user = "<%= session.user ? session.user['username'] : 'Guest' %>";
+    const user = "<%= session.user ? session.user['username'] : null %>";
     const roomId = '<%= locals.roomId %>'; // This assumes you pass `roomId` when rendering the EJS
 
     socket.emit('join room', roomId); // Joining a specific room
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
+		if(!user) return alert('Please login to chat');
         if (input.value) {
             socket.emit('chat message', { room: roomId, user: user, message: input.value });
             input.value = '';
