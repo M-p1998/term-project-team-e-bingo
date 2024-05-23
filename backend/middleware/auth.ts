@@ -154,7 +154,6 @@ const isPlayerInAnyRoom = async (req: Request, res: Response, next: NextFunction
     }
 };
 
-export default isPlayerInAnyRoom;
 
 
 export { sessionData, requiredLoginAllSites, loginRequest ,isUserExist,isUserExistAndGameStarted,isPlayerInAnyRoom}

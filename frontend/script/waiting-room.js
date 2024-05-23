@@ -66,6 +66,13 @@ socket.on('new player joined', function (data) {
 	const userId = data.userId
 	addPlayer(player, roomId, userId)
 })
+
+socket.on('error', function (data) {
+	const {error} = data
+	window.alert(error)
+	window.location.href = '/lobby'
+})
+
 function markReady(roomId, userId) {
 	console.log('clicked ready')
 	socket.emit('player ready', {roomId: roomId, userId: userId})
@@ -95,7 +102,8 @@ async function exitRoom(roomId, userId) {
 				socket.emit('delete room', {roomId: roomId, userId: userId})
 				window.location.href = '/lobby'
 			} else {
-				window.alert('Failed to delete room:', data.message) // Display server error message if available
+				const errorData = await response.json();
+				window.alert('Failed to delete room:', errorData.message)
 			}
 			return
 		} else {
@@ -107,7 +115,6 @@ async function exitRoom(roomId, userId) {
 	window.location.href = '/lobby'
 }
 
-/* Create player element for new design */
 const createPlayerElement = (userId, username) => {
 	const cardPlayer = createElement('div', {class: 'card'}, `player-${userId}`)
 	const faceTag = createElement('i', {class: 'fa-solid fa-face-smile'})
@@ -123,7 +130,6 @@ const createPlayerElement = (userId, username) => {
 	return cardPlayer
 }
 
-// const createButtonForPlayer()
 
 function addPlayer(player, roomId, userId) {
 	const playerContainer = getByID('players')
@@ -156,60 +162,6 @@ function addPlayer(player, roomId, userId) {
 			playerCard.appendChild(kickButton)
 		}
 		playerContainer.appendChild(playerCard)
-
-		/*
-        // playerCard = document.createElement('div')
-		// playerCard.className = 'player'
-		// playerCard.id = `player-${userId}`
-
-		// const playerInfo = document.createElement('p')
-
-		// const usernameSpan = document.createElement('span')
-		// usernameSpan.id = `username-${userId}`
-		// usernameSpan.textContent = player
-
-		// const statusSpan = document.createElement('span')
-		// statusSpan.id = `status-${userId}`
-		// statusSpan.textContent = 'Not Ready'
-
-		// playerInfo.appendChild(usernameSpan)
-		// playerInfo.appendChild(document.createTextNode(' - '))
-		// playerInfo.appendChild(statusSpan)
-
-		// playerCard.appendChild(playerInfo)
-        */
-
-		// Create buttons for the current session user
-		// if (userId === sessionUserId) {
-		// 	// Assuming sessionUserId is globally defined
-		// 	const readyButton = document.createElement('button')
-		// 	readyButton.id = `readyButton-${userId}`
-		// 	readyButton.textContent = 'Ready'
-		// 	readyButton.onclick = function () {
-		// 		markReady(roomId, userId)
-		// 	}
-		// 	playerInfo.appendChild(readyButton)
-
-		// 	const exitButton = document.createElement('button')
-		// 	exitButton.textContent = 'Exit'
-		// 	exitButton.onclick = function () {
-		// 		exitRoom(roomId, userId)
-		// 	}
-		// 	playerInfo.appendChild(exitButton)
-		// }
-
-		// Create a kick button if the current session user is the host and not the same as the player
-		// if (hostId === sessionUserId && userId !== sessionUserId) {
-		// 	// Assuming hostId is globally defined
-		// 	const kickButton = document.createElement('button')
-		// 	kickButton.textContent = 'Kick'
-		// 	kickButton.onclick = function () {
-		// 		kick(roomId, userId)
-		// 	}
-		// 	playerInfo.appendChild(kickButton)
-		// }
-
-		// playerContainer.appendChild(playerCard)
 	}
 }
 
@@ -248,34 +200,6 @@ function startGame() {
 	const userResponse = window.confirm('Are you sure you want to start the game?')
 	if (!userResponse) return
 	startingGame(playerIds, roomId, hostId)
-
-	// Old version:
-	// const playersDiv = document.getElementById('players');
-	// const players = playersDiv.getElementsByClassName('player');
-	// const playerIds = Array.from(players).map(player => parseInt(player.id.replace('player-', '')));
-	// if (playerIds.length < 4) {
-	//     window.alert('You need at least 4 players to start the game');
-	//     return;
-	// }
-	// const allPlayers = document.querySelectorAll('#players .player'); // Get all player divs
-	// let allReady = true; // Assume all are ready initially
-
-	// allPlayers.forEach(player => {
-	//     const statusSpan = player.querySelector('span[id^="status-"]'); // Get the status span
-	//     if (statusSpan.textContent.trim() !== 'Ready') { // Check if the text is not 'Ready'
-	//         allReady = false; // Set allReady to false if any player is not ready
-	//     }
-	// });
-
-	// if (allReady) {
-	//     const userResponse = window.confirm("Are you sure you want to start the game?")
-	//     if (!userResponse) {
-	//         return;
-	//     }
-	//     startingGame(playerIds, roomId, hostId);
-	// } else {
-	//     window.alert("Not all players are ready.");
-	// }
 }
 
 async function startingGame(playerIds, roomId, hostId) {
@@ -291,12 +215,12 @@ async function startingGame(playerIds, roomId, hostId) {
 				room_id: parseInt(roomId),
 			}),
 		})
-		const data = await response.json() // Convert the response to JSON
+		const data = await response.json()
 		if (response.ok) {
 			socket.emit('starting game', {roomId: roomId})
-			window.location.href = `/game/${roomId}` // Redirect only if fetch was successful
+			window.location.href = `/game/${roomId}`
 		} else {
-			window.alert('Failed to join room:', data.message) // Display server error message if available
+			window.alert('Failed to join room:', data.message)
 		}
 	} catch (error) {
 		console.error('Failed to join room', error)

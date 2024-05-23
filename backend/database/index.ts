@@ -37,42 +37,13 @@ async function insertUser(username: string, password: string, email: string): Pr
 	}
 }
 
-async function checkConnection(): Promise<void> {
-	try {
-		const result = await query('SELECT NOW() as now', [])
-		const currentTime = result.rows[0].now
-
-		console.log('Successfully connected to PostgreSQL server. Current time:', currentTime)
-	} catch (error) {
-		console.error('Error connecting to PostgreSQL server:', error)
-		throw error
-	}
-}
-
-async function createTable(): Promise<void> {
-	try {
-		const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL
-      )
-    `
-		await query(createTableQuery, [])
-		console.log('Table "users" created successfully')
-	} catch (error) {
-		console.error('Error creating table:', error)
-		throw error // Rethrow the error for handling at a higher level
-	}
-}
-
 async function getUsers() {
 	try {
 		const result = await query('SELECT * FROM bingo_schema."Users"', [])
 		return result.rows
 	} catch (error) {
 		console.error('Error executing query', error)
+		throw error
 	}
 }
 
@@ -129,7 +100,7 @@ async function deleteRoom(roomId: number) {
 	}
 }
 
-async function getRooms() {
+async function getRooms(){
 	try {
 		const result = await query('SELECT * FROM bingo_schema."Rooms"', [])
 		return result.rows
@@ -233,43 +204,6 @@ async function ifPlayerInAnyRoom(user_id: Number|undefined) {
 	}
 }
 
-/**
- * Inserts the generated card into the database
- * @param arrayOfNum An array of integer array.
- */
-async function insertCard(arrayOfNum: number[][]) {
-	try {
-		const cardData = JSON.stringify(arrayOfNum)
-
-		const queryText = `
-      INSERT INTO bingo_schema.cards_table(card_data)
-      VALUES ($1)
-    `
-
-		const queryParams = [cardData]
-
-		await query(queryText, queryParams)
-		console.log('Card inserted successfully')
-	} catch (error) {
-		console.error('Error inserting card:', error)
-		throw error
-	}
-}
-/**
- * Get a card from our database
- * @param card_id ID of the specified card.
- * @returns The card information
- */
-async function getCard(card_id: number) {
-	try {
-		const card = await query(`SELECT * FROM bingo_schema.cards_table WHERE card_id = $1;`, [card_id])
-		return card.rows[0]
-	} catch (error) {
-		console.error('Error inserting user:', error)
-		throw error
-	}
-}
-
 async function getRoomDetails(room_id: Number) {
 	try {
 		const room = await query(`
@@ -295,28 +229,6 @@ async function getRoomDetails(room_id: Number) {
 		return room.rows
 	} catch (error) {
 		console.error('Error inserting user:', error)
-		throw error
-	}
-}
-
-async function insertFourCard() {
-	const collection: number[][][] = []
-	for (let i = 0; i < 4; i++) {
-		collection.push(card.generateCard())
-	}
-	try {
-		const queryText = `
-        INSERT INTO bingo_schema.cards_table (card_data)
-        VALUES ($1), ($2), ($3), ($4)
-        RETURNING card_id, card_data;
-      `
-		const queryParams = [JSON.stringify(collection[0]), JSON.stringify(collection[1]), JSON.stringify(collection[2]), JSON.stringify(collection[3])]
-
-		const result = await query(queryText, queryParams)
-		console.log('4 cards inserted successfully')
-		return result.rows
-	} catch (error) {
-		console.error('Error inserting card:', error)
 		throw error
 	}
 }
@@ -495,25 +407,18 @@ async function deleteOldCards(roomId: number) {
 
 async function insertStartTime(roomId: number) {
 	try {
-		// createTableTimer();
-		// const currentTime = new Date()
-		// const endTime = new Date(currentTime.getTime() + 10 * 60 * 1000)
-
 		const queryText = 'INSERT INTO bingo_schema.room_timer (room_id) VALUES ($1)';
 		const queryParams = [roomId];
 		await query(queryText, queryParams)
 		console.log('Room Insert Time successfully')
 	} catch (error) {
 		console.error('Error inserting time:', error)
+		throw error
 	}
 }
 
 async function deleteStartTime(roomId: number) {
 	try {
-		// createTableTimer();
-		// const currentTime = new Date()
-		// const endTime = new Date(currentTime.getTime() + 10 * 60 * 1000)
-
 		const queryText = 'DELETE FROM bingo_schema.room_timer WHERE room_id = $1';
 		const queryParams = [roomId];
 
@@ -521,6 +426,7 @@ async function deleteStartTime(roomId: number) {
 		console.log('Room Insert Time successfully')
 	} catch (error) {
 		console.error('Error inserting time:', error)
+		throw error
 	}
 }
 
@@ -650,34 +556,15 @@ async function getMarkedCells(room_id: Number) {
 	}
 }
 
-// async function createTableTimer(): Promise<void> {
-// 	try {
-// 		const createTableQuery = `
-//       	CREATE TABLE IF NOT EXISTS room_timer (
-// 		room_id INT,
-// 		timestamp_start TIMESTAMP,
-// 		time_start TIME
-//       )
-//     `
-// 		await query(createTableQuery, [])
-// 		console.log('Table "users" created successfully')
-// 	} catch (error) {
-// 		console.error('Error creating table:', error)
-// 		throw error // Rethrow the error for handling at a higher level
-// 	}
-// }
 
 export {
 	insertUser,
 	getUsers,
-	createTable,
 	getUserData,
 	createRoom,
 	addPlayerToRoom,
 	removePlayerFromRoom,
 	getPlayerInRoom,
-	insertCard,
-	getCard,
 	getRooms,
 	getRoomId,
 	getRoomDetail,
@@ -685,7 +572,6 @@ export {
 	ifPlayerInRoom,
 	getRoomDetails,
 	deleteRoom,
-	insertFourCard,
 	assignCardToPlayer,
 	insertPlayerStatus,
 	getPlayerStatus,
