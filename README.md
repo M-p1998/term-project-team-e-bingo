@@ -1,6 +1,6 @@
 # Team E: Bingo Code Repository
 
-## Team member
+## Team Members
 |        Student ID          |     Student Full Name      |
 | ---------------------------| ---------------------------|
 |         922254694          |     Ekarat Buddharuksa     |
@@ -11,23 +11,23 @@
 ***
 
 ## Setup
-1. After you clone the repository, create .env file in root directory and add this header into .env file
-
-    ```
+1. After you clone the repository, create a `.env` file in the root directory and add this header into the `.env` file:
+    ```plaintext
     POSTGRE_ID=''
     POSTGRE_PASS=''
     DB_HOST=''
     ```
+    Fill in your PostgreSQL information.
 
-    Fill in your PostgreSQL information
-<br />
-2. Goto /backend/database, there will be 2 files avaliable
-   - backup.sql - this the SQL query to create schema on your database in PostgreSQL.
-   - index.ts - Sql query collection file, here you need to change a few thing
-     - Line 9, change port, database, and ssl configuration according to your PostgreSQL setting
+2. Navigate to `/backend/database`, where there will be 2 files available:
+   - **backup.sql**: This file contains the SQL query to create the schema in your PostgreSQL database.
+   - **index.ts**: SQL query collection file. You need to change the following:
+     ```
+     Line 9, change port, database, and ssl configuration according to your PostgreSQL setting
+     ```
 
-## Starting the application
-### Running in development mode
+## Starting the Application
+### Running in Development Mode
  ```
  npm run dev 
  ```
