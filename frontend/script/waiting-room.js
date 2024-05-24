@@ -12,7 +12,6 @@ const createElement = (tag, attributes, id, content) => {
 	return element
 }
 
-/* Update color status on player change */
 const updateUserStatus = (userId, status) => {
 	const statusText = getByID(`status-${userId}`)
 	statusText.textContent = status ? 'Ready' : 'Not Ready'
@@ -23,55 +22,6 @@ const updateUserStatus = (userId, status) => {
 	const statusColor = getByID(`status-color-${userId}`)
 	statusColor.style.backgroundColor = status ? 'rgb(181, 255, 69)' : 'rgb(255, 0, 0)'
 }
-
-socket.on('player ready', function (data) {
-	const {userId, status} = data
-	updateUserStatus(userId, status)
-})
-
-//OLD VERSION
-// socket.on('player ready', function (data) {
-// 	const {userId} = data
-// 	const statusElement = document.getElementById('status-' + userId)
-// 	if (statusElement) {
-// 		if (statusElement.textContent === 'Ready') {
-// 			statusElement.textContent = 'Not Ready'
-// 		} else {
-// 			statusElement.textContent = 'Ready'
-// 		}
-// 	}
-// 	const buttonElement = document.getElementById('readyButton-' + userId)
-// 	if (buttonElement) {
-// 		if (buttonElement.textContent === 'Ready') {
-// 			buttonElement.textContent = 'Not Ready'
-// 		} else {
-// 			buttonElement.textContent = 'Ready'
-// 		}
-// 	}
-// })
-
-// Listen for 'player exited' events
-socket.on('player exited', function (data) {
-	const {userId} = data
-	// Example: Remove the player's element or update it to show they've exited
-	const playerElement = document.getElementById('player-' + userId)
-	if (playerElement) {
-		playerElement.parentNode.removeChild(playerElement)
-	}
-})
-
-socket.on('new player joined', function (data) {
-	const player = data.username
-	const roomId = data.roomId
-	const userId = data.userId
-	addPlayer(player, roomId, userId)
-})
-
-socket.on('error', function (data) {
-	const {error} = data
-	window.alert(error)
-	window.location.href = '/lobby'
-})
 
 function markReady(roomId, userId) {
 	console.log('clicked ready')
@@ -170,15 +120,7 @@ function kick(roomId, userId) {
 	socket.emit('kicking player', {roomId: roomId, userId: userId})
 }
 
-socket.on('player kicked', function (data) {
-	user_id = parseInt(data.userId)
-	session_id = parseInt(sessionUserId)
-	console.log(user_id === session_id)
-	if (user_id === session_id) {
-		window.alert('You have been kicked from the room.')
-		window.location.href = '/lobby'
-	}
-})
+
 
 function startGame() {
 	const playersContainer = document.getElementById('players')
@@ -226,6 +168,44 @@ async function startingGame(playerIds, roomId, hostId) {
 		console.error('Failed to join room', error)
 	}
 }
+
+socket.on('player ready', function (data) {
+	const {userId, status} = data
+	updateUserStatus(userId, status)
+})
+
+
+socket.on('player exited', function (data) {
+	const {userId} = data
+	const playerElement = document.getElementById('player-' + userId)
+	if (playerElement) {
+		playerElement.parentNode.removeChild(playerElement)
+	}
+})
+
+socket.on('new player joined', function (data) {
+	const player = data.username
+	const roomId = data.roomId
+	const userId = data.userId
+	addPlayer(player, roomId, userId)
+})
+
+socket.on('error', function (data) {
+	const {error} = data
+	window.alert(error)
+	window.location.href = '/lobby'
+})
+
+socket.on('player kicked', function (data) {
+	user_id = parseInt(data.userId)
+	session_id = parseInt(sessionUserId)
+	console.log(user_id === session_id)
+	if (user_id === session_id) {
+		window.alert('You have been kicked from the room.')
+		window.location.href = '/lobby'
+	}
+})
+
 socket.on('game started', function (data) {
 	window.location.href = `/game/${data.roomId}`
 })

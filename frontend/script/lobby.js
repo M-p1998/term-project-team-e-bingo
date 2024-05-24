@@ -7,21 +7,7 @@ createRoomBtn.onclick = () => {
         socket.emit('create room', { roomName: roomName, user: user });
     }
 };
-socket.on('failed create room', (data) => {
-    if (data.error && data.user === user) {
-        alert(data.error);
-    }
-});
 
-
-socket.on('update room', (room) => {
-    if (room.user === user) {
-        window.location.href = `/waiting/${room.roomId}`;
-    } else {
-        const roomsList = document.getElementById('roomsList');
-        addEntry(room.user, room.roomName, room.roomId, room.status, roomsList, false);
-    }
-});
 function addEntry(host, roomName, roomId, roomStatus, roomsList, isRejoin) {
     const row = document.createElement('tr');
     row.setAttribute('room', roomId);
@@ -58,28 +44,6 @@ function addEntry(host, roomName, roomId, roomStatus, roomsList, isRejoin) {
 
     roomsList.appendChild(row);
 }
-
-
-
-socket.on('update status game', (data) => {
-    const joinButton = document.getElementById(`status-${data.roomId}`);
-
-    if (data.status) {
-        joinButton.innerText = "Playing";
-        joinButton.onclick = null;
-        joinButton.classList.add('playing')
-    } else {
-        joinButton.innerText = "Join"
-        joinButton.onclick = () => joinRoom(data.roomId);
-        joinButton.classList.remove('playing')
-    }
-});
-
-socket.on('room deleted', (data) => {
-    const roomId = data.roomId;
-    const roomElement = document.querySelector(`[room="${roomId}"]`);
-    roomElement.parentNode.removeChild(roomElement);
-});
 
 async function fetchRooms() {
     try {
@@ -141,5 +105,41 @@ async function checkUserInRoomAndGameStarted(roomId) {
         return false;
     }
 }
+
+socket.on('failed create room', (data) => {
+    if (data.error && data.user === user) {
+        alert(data.error);
+    }
+});
+
+
+socket.on('update room', (room) => {
+    if (room.user === user) {
+        window.location.href = `/waiting/${room.roomId}`;
+    } else {
+        const roomsList = document.getElementById('roomsList');
+        addEntry(room.user, room.roomName, room.roomId, room.status, roomsList, false);
+    }
+});
+
+socket.on('update status game', (data) => {
+    const joinButton = document.getElementById(`status-${data.roomId}`);
+
+    if (data.status) {
+        joinButton.innerText = "Playing";
+        joinButton.onclick = null;
+        joinButton.classList.add('playing')
+    } else {
+        joinButton.innerText = "Join"
+        joinButton.onclick = () => joinRoom(data.roomId);
+        joinButton.classList.remove('playing')
+    }
+});
+
+socket.on('room deleted', (data) => {
+    const roomId = data.roomId;
+    const roomElement = document.querySelector(`[room="${roomId}"]`);
+    roomElement.parentNode.removeChild(roomElement);
+});
 
 fetchRooms();

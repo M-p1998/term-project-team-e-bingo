@@ -79,7 +79,7 @@ router.post('/logout', (req: Request, res: Response) => {
 
 router.get('/available_rooms', async (req: Request, res: Response) => {
 	try {
-		const result = await db.getRooms() // Await the getRooms() function call
+		const result = await db.getRooms()
 		if (result) {
 			res.json(result) // Send the result directly
 		} else {
@@ -98,7 +98,6 @@ router.get('/waiting/:roomId', isUserExist, async (req, res) => {
 		const rawData = await db.getRoomDetails(parseInt(roomId))
 		const playerStatuses = await db.getAllPlayerStatus(parseInt(roomId)) // Fetch statuses
 
-		// Assuming all entries have the same room details
 		const roomDetails = {
 			room_id: rawData[0].room_id,
 			room_name: rawData[0].room_name,
@@ -115,7 +114,7 @@ router.get('/waiting/:roomId', isUserExist, async (req, res) => {
 			roomDetails: roomDetails,
 			players: roomDetails.players,
 			host: host,
-			user: req.session.user, // Assuming session management
+			user: req.session.user,
 			session: req.session,
 		})
 	} catch (error) {
@@ -182,7 +181,6 @@ router.get('/game/:roomId', isUserExistAndGameStarted, async (req, res) => {
 		const rawData = await db.getGameInfo(parseInt(roomId))
 		const drawnNumber = await db.getDrawnNumber(parseInt(roomId))
 		const markedNumber = await db.getMarkedCells(parseInt(roomId))
-		//const getDrawnBalls = await db.getDrawnBalls(roomId);
 
 		const gameInfo = {
 			room_id: rawData[0].room_id,
@@ -207,7 +205,7 @@ router.get('/game/:roomId', isUserExistAndGameStarted, async (req, res) => {
 			gameInfo: gameInfo,
 			players: gameInfo.players,
 			host: host,
-			user: req.session.user, // Assuming session management
+			user: req.session.user,
 			session: req.session,
 		})
 	} catch (error) {
