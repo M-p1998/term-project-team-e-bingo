@@ -26,7 +26,10 @@
      ```
      Line 9, change port, database, and ssl configuration according to your PostgreSQL setting
      ```
-
+## Install dependency
+ ```
+ npm install 
+ ```
 ## Starting the Application
 ### Running in Development Mode
  ```
