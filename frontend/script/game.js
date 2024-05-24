@@ -46,15 +46,8 @@ function startSynchronizedTimer(startTime, maxDuration, display) {
 function callNumber() {
 	setInterval(function () {
 		if (userId == hostId) {
-			const number = generateRandomNumber()
-			if (number == null) {
-				return
-			}
 			socket.emit('generate random number', {
 				roomId: roomId,
-				userId: userId,
-				session: userId,
-				number: number,
 			})
 		}
 	}, 1000)
