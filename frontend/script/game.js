@@ -96,7 +96,7 @@ socket.on('number generated', function (data) {
 })
 
 window.onload = async function () {
-	const maxGameTime = 10 // Maximum game time in minutes
+	const maxGameTime = 10 // minutes
 	var display = document.querySelector('#timer')
 	startSynchronizedTimer(startTime, maxGameTime, display)
 	if (userId == hostId) {

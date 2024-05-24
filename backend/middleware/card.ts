@@ -23,7 +23,7 @@ function generateCard(): Card {
             do {
                 const range = rowRanges[i];
                 number = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-            } while (usedNumbers.includes(number)); // Check to avoid duplication within the same row
+            } while (usedNumbers.includes(number));
             numbers[i][j] = number;
             usedNumbers.push(number);
         }
@@ -47,7 +47,6 @@ function checkForWin(card: Card, calledNumbers: number[]): boolean {
         }
     }
 
-    // Check diagonal (top-left to bottom-right)
     let diagonalWin1 = true;
     for (let i = 0; i < 5; i++) {
         if (!calledNumbers.includes(card[i][i]) && card[i][i] !== 0) {
@@ -57,7 +56,6 @@ function checkForWin(card: Card, calledNumbers: number[]): boolean {
     }
     if (diagonalWin1) return true;
 
-    // Check diagonal (top-right to bottom-left)
     let diagonalWin2 = true;
     for (let i = 0; i < 5; i++) {
         if (!calledNumbers.includes(card[i][4 - i]) && card[i][4 - i] !== 0) {

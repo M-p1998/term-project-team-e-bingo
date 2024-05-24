@@ -21,7 +21,6 @@ async function query(text: string, params: any[]): Promise<QueryResult<any>> {
 	const start = Date.now()
 	const res = await pool.query(text, params)
 	const duration = Date.now() - start
-	//console.log("executed query", { text, duration, rows: res.rowCount });
 	return res
 }
 
@@ -134,12 +133,7 @@ async function getRoomDetail(roomId: Number): Promise<any> {
 	}
 }
 
-/**
- * Add player to the room.
- *
- * @param player_id Player ID joining the room.
- * @param room_id Room ID.
- */
+
 async function addPlayerToRoom(player_id: number, room_id: number) {
 	try {
 		const queryText = `INSERT INTO bingo_schema.room_player_table(user_id, room_id)VALUES ($1, $2);`
@@ -152,11 +146,7 @@ async function addPlayerToRoom(player_id: number, room_id: number) {
 	}
 }
 
-/**
- * Removes the player in the room. Can be used in a leave button.
- * @param player_id Player ID joining the room.
- * @param room_id  Room ID.
- */
+
 async function removePlayerFromRoom(player_id: number, room_id: number) {
 	try {
 		const queryText = `DELETE FROM bingo_schema.room_player_table WHERE user_id = $1 AND room_id = $2;`
@@ -169,12 +159,7 @@ async function removePlayerFromRoom(player_id: number, room_id: number) {
 	}
 }
 
-/**
- * Fetch the Player in the room.
- * @param player_id ID of the player in the room
- * @param room_id ID of the specified room.
- * @returns A row of the user if it exist in the table
- */
+
 async function getPlayerInRoom(room_id: number) {
 	try {
 		const user = await query(`SELECT * FROM bingo_schema.room_player_table WHERE room_id = $1`, [room_id])
@@ -251,7 +236,6 @@ async function insertNumCard(room_id: number) {
 	  		VALUES ${values}
 	  		RETURNING card_id, card_data;
   `;
-		// Execute the insertion query
 		const result = await query(queryText, queryParams);
 		console.log(`${playerCount} cards inserted successfully`);
 		return result.rows;
@@ -300,7 +284,6 @@ async function updatePlayerStatus(player_id: number, room_id: number, status: bo
 		const queryText = `UPDATE bingo_schema.player_ready_status SET status = $1 WHERE player_id = $2 AND room_id = $3;`
 		const queryParams = [status, player_id, room_id]
 		await query(queryText, queryParams)
-		// console.log(`Player ${player_id} in ${room_id} changed status to "${status ? 'Ready': 'Not Ready'}" successfully`);
 		return status
 	} catch (error) {
 		console.error('Error inserting user:', error)

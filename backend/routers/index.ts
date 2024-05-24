@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
 			return res.render('register', { session: req.session, errorMessage: 'Invalid email format!' })
 		}
 	
-		const allUser = await db.getUsers() // Await the getUsers() function call
+		const allUser = await db.getUsers()
 		const userExist = allUser?.find((user) => user.username === username)
 		if (userExist) {
 			return res.render('register', { session: req.session, errorMessage: 'Username already exist!' })
@@ -81,7 +81,7 @@ router.get('/available_rooms', async (req: Request, res: Response) => {
 	try {
 		const result = await db.getRooms()
 		if (result) {
-			res.json(result) // Send the result directly
+			res.json(result) 
 		} else {
 			res.status(500).send('Error retrieving rooms')
 		}
@@ -96,8 +96,7 @@ router.get('/waiting/:roomId', isUserExist, async (req, res) => {
 
 	try {
 		const rawData = await db.getRoomDetails(parseInt(roomId))
-		const playerStatuses = await db.getAllPlayerStatus(parseInt(roomId)) // Fetch statuses
-
+		const playerStatuses = await db.getAllPlayerStatus(parseInt(roomId)) 
 		const roomDetails = {
 			room_id: rawData[0].room_id,
 			room_name: rawData[0].room_name,
@@ -144,7 +143,6 @@ router.post('/join_room/:roomId', async (req: Request, res: Response) => {
 			const player_id = await db.getUserIdByUsername(req.session.user.username)
 			const room_id = parseInt(req.params.roomId)
 
-			// It's better to check if player_id or room_id are valid before proceeding
 			if (!player_id || isNaN(room_id)) {
 				return res.status(400).json({ message: 'Invalid user or room ID' })
 			}
@@ -166,7 +164,7 @@ router.post('/join_room/:roomId', async (req: Request, res: Response) => {
 			res.status(500).send('Internal Server Error')
 		}
 	} else {
-		res.status(401).json({ message: 'User not logged in' }) // 401 for unauthorized access
+		res.status(401).json({ message: 'User not logged in' }) 
 	}
 })
 
@@ -223,7 +221,6 @@ router.post('/starting_game/:roomId', async (req: Request, res: Response) => {
 		await db.insertDrawnNumber(room_id, 0)
 		await db.updateRoomStatus(room_id, true)
 	
-		// ONLY INSERT CARDS BASE ON NUMBER OF USERs
 		const cardCollection = await db.insertNumCard(room_id)
 	
 		if (Array.isArray(cardCollection) && cardCollection.length >= players.length) {
