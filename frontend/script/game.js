@@ -63,6 +63,7 @@ socket.on('update card marked', function (data) {
 	const userCard = document.getElementById(`${data.playerId}-${data.row}-${data.col}`)
 	userCard.classList.toggle('marked')
 })
+
 socket.on('player won', function (data) {
 	if (userId == data.playerId) {
 		socket.emit('game ended', {roomId: roomId})
@@ -71,15 +72,17 @@ socket.on('player won', function (data) {
 		alert(data.playerUsername + ' won the game!')
 	}
 })
-socket.on('finished cleanup', async function (data) {
-	await sleep(1000)
-	window.location.href = `/waiting/${data.roomId}`
-})
 socket.on('player not won', function (data) {
 	if (userId == data.playerId) {
 		alert('You did not win, check your card again!')
 	}
 })
+
+socket.on('finished cleanup', async function (data) {
+	await sleep(1000)
+	window.location.href = `/waiting/${data.roomId}`
+})
+
 socket.on('error', function (data) {
 	const {error} = data
 	window.alert(error)
