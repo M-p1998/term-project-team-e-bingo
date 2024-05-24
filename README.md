@@ -11,6 +11,7 @@
 ***
 
 ## Setup
+**FOR INSTUCTOR. The .env file for this specific project will be provide upon submission. The .env file provide will contain credential to the remote database. Please use that file to test the project**
 1. After you clone the repository, create a `.env` file in the root directory and add this header into the `.env` file:
     ```plaintext
     POSTGRE_ID=''
