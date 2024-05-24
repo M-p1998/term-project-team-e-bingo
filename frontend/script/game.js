@@ -43,16 +43,6 @@ function startSynchronizedTimer(startTime, maxDuration, display) {
 	}, 1000)
 }
 
-function callNumber() {
-	setInterval(function () {
-		if (userId == hostId) {
-			socket.emit('generate random number', {
-				roomId: roomId,
-			})
-		}
-	}, 1000)
-}
-
 function markNumber(cell) {
 	const [playerId, row, col] = cell.id.split('-')
 	const cell_id = cell.id
